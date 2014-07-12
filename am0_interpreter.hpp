@@ -7,21 +7,18 @@
 
 namespace am0_interpreter {
 	typedef struct am0_state {
-		int unsigned pc;
+		unsigned int pc;
 		std::vector<int> d_stack;
 		std::map<int,int> mem;
 	} am0_state_t;
 
 	class am0 {
 		public:
-			enum class func {
-				ADD,SUB,MUL,DIV,MOD,LT,EQ,NE,GT,LE,GE, LOAD,LIT,STORE,JMP,JMC,READ,WRITE
-			};
-
-			void add_function(func, int = 0);
 			bool set_state(const am0_state_t&);
-			bool run(bool = false);
-			void reset(void);
+			virtual bool run(bool = false);
+			virtual void reset(void);
+			static bool parse(am0&, std::istream& = std::cin, bool = false);
+			static bool parse(am0_state_t&, std::istream& = std::cin);
 			friend std::ostream& operator<<(std::ostream&,const am0&);
 		private:
 			typedef boost::variant<
@@ -30,6 +27,7 @@ namespace am0_interpreter {
 			> am0_func;
 
 			std::vector<am0_func> prog;
+			std::map<int,int> mem;
 
 			class am0_func_visitor : public boost::static_visitor<bool> {
 				public:
@@ -47,10 +45,9 @@ namespace am0_interpreter {
 		protected:
 			unsigned int pc = 1;
 			std::vector<int> d_stack;
-			std::map<int,int> mem;
 
 			bool enough_arguments_on_stack(int) const;
-			bool address_is_valid(int,bool = false) const;
+			virtual bool address_is_valid(int,bool = false) const;
 			bool jmp_address_is_valid(int,bool = false) const;
 
 			bool perform_bin_op(const std::function<void(int,int&)>&);
@@ -70,6 +67,4 @@ namespace am0_interpreter {
 			static bool jmc(am0&,int);
 	};
 
-	bool parse(am0&, std::istream& = std::cin, bool = false);
-	bool parse(am0_state_t&, std::istream& = std::cin);
 }

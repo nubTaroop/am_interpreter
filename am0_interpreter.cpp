@@ -4,27 +4,6 @@
 #include "am0_interpreter.hpp"
 
 namespace am0_interpreter {
-	void am0::add_function(func f, int par) {
-		if (f == func::ADD) prog.push_back(add);
-		else if (f == func::SUB) prog.push_back(sub);
-		else if (f == func::MUL) prog.push_back(mul);
-		else if (f == func::DIV) prog.push_back(div);
-		else if (f == func::MOD) prog.push_back(mod);
-		else if (f == func::LT) prog.push_back(lt);
-		else if (f == func::EQ) prog.push_back(eq);
-		else if (f == func::NE) prog.push_back(ne);
-		else if (f == func::GT) prog.push_back(gt);
-		else if (f == func::LE) prog.push_back(le);
-		else if (f == func::GE) prog.push_back(ge);
-		else if (f == func::LOAD) prog.push_back(std::make_pair(load, par));
-		else if (f == func::LIT) prog.push_back(std::make_pair(lit, par));
-		else if (f == func::STORE) prog.push_back(std::make_pair(store, par));
-		else if (f == func::JMP) prog.push_back(std::make_pair(jmp, par));
-		else if (f == func::JMC) prog.push_back(std::make_pair(jmc, par));
-		else if (f == func::READ) prog.push_back(std::make_pair(read, par));
-		else if (f == func::WRITE) prog.push_back(std::make_pair(write, par));
-	}
-
 	bool am0::enough_arguments_on_stack(int amount) const {
 		if (d_stack.size() < (size_t) amount) {
 			std::cerr << "Not enough arguments on data stack" << std::endl;
@@ -227,7 +206,7 @@ namespace am0_interpreter {
 		return false;
 	}
 
-	bool parse(am0& prog, std::istream& is, bool file) {
+	bool am0::parse(am0& am, std::istream& is, bool file) {
 		std::cout << "AM0 code:" << std::endl;
 		int lnr = 0;
 		std::string line;
@@ -246,37 +225,37 @@ namespace am0_interpreter {
 			std::string keyword;
 			int par;
 			ls >> keyword;
-			if (keyword == "ADD;") { prog.add_function(am0::func::ADD); continue; }
-			else if (keyword == "SUB;") { prog.add_function(am0::func::SUB); continue; }
-			else if (keyword == "MUL;") { prog.add_function(am0::func::MUL); continue; }
-			else if (keyword == "DIV;") { prog.add_function(am0::func::DIV); continue; }
-			else if (keyword == "MOD;") { prog.add_function(am0::func::MOD); continue; }
-			else if (keyword == "LT;") { prog.add_function(am0::func::LT); continue; }
-			else if (keyword == "EQ;") { prog.add_function(am0::func::EQ); continue; }
-			else if (keyword == "NE;") { prog.add_function(am0::func::NE); continue; }
-			else if (keyword == "GT;") { prog.add_function(am0::func::GT); continue; }
-			else if (keyword == "LE;") { prog.add_function(am0::func::LE); continue; }
-			else if (keyword == "GE;") { prog.add_function(am0::func::GE); continue; }
+			if (keyword == "ADD;") { am.prog.push_back(add); continue; }
+			else if (keyword == "SUB;") { am.prog.push_back(sub); continue; }
+			else if (keyword == "MUL;") { am.prog.push_back(mul); continue; }
+			else if (keyword == "DIV;") { am.prog.push_back(div); continue; }
+			else if (keyword == "MOD;") { am.prog.push_back(mod); continue; }
+			else if (keyword == "LT;") { am.prog.push_back(lt); continue; }
+			else if (keyword == "EQ;") { am.prog.push_back(eq); continue; }
+			else if (keyword == "NE;") { am.prog.push_back(ne); continue; }
+			else if (keyword == "GT;") { am.prog.push_back(gt); continue; }
+			else if (keyword == "LE;") { am.prog.push_back(le); continue; }
+			else if (keyword == "GE;") { am.prog.push_back(ge); continue; }
 			else if (keyword == "LOAD") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-					prog.add_function(am0::func::LOAD,par); continue; }
+				am.prog.push_back(std::make_pair(load,par)); continue; }
 			}
 			else if (keyword == "LIT") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-					prog.add_function(am0::func::LIT,par); continue; }
+				am.prog.push_back(std::make_pair(lit,par)); continue; }
 			}
 			else if (keyword == "STORE") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-					prog.add_function(am0::func::STORE,par); continue; }
+				am.prog.push_back(std::make_pair(store,par)); continue; }
 			}
 			else if (keyword == "JMP") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-					prog.add_function(am0::func::JMP,par); continue; }
+				am.prog.push_back(std::make_pair(jmp,par)); continue; }
 			}
 			else if (keyword == "JMC") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-					prog.add_function(am0::func::JMC,par); continue; }
+				am.prog.push_back(std::make_pair(jmc,par)); continue; }
 			}
 			else if (keyword == "READ") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-					prog.add_function(am0::func::READ,par); continue; }
+				am.prog.push_back(std::make_pair(read,par)); continue; }
 			}
 			else if (keyword == "WRITE") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-					prog.add_function(am0::func::WRITE,par); continue; }
+				am.prog.push_back(std::make_pair(write,par)); continue; }
 			}
 			return parse_error(is);
 		}
@@ -288,7 +267,7 @@ namespace am0_interpreter {
 		return true;
 	}
 
-	bool parse(am0_state_t& state, std::istream& is) {
+	bool am0::parse(am0_state_t& state, std::istream& is) {
 		state.d_stack.clear();
 		state.mem.clear();
 		std::cout << "AM0 state:" << std::endl;

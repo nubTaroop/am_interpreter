@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 					cerr << "Could not open file '" << argv[i] << "'" << endl;
 					return 1;
 				}
-				if (!parse(prog, fs, FILE_T)) return 1;
+				if (!am0::parse(prog, fs, FILE_T)) return 1;
 				file = true;
 			}
 			else {
@@ -54,11 +54,11 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	if (!file && !parse(prog)) return 1;
+	if (!file && !am0::parse(prog)) return 1;
 	if (state) {
 		am0_state_t am0_state;
 		bool once = true;
-		while (!parse(am0_state)) {
+		while (!am0::parse(am0_state)) {
 			if (once) {
 				cout << "Examples for valid AM0 states:\n" <<
 					"{1,-,[]} (default)\n" <<
