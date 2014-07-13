@@ -6,19 +6,13 @@
 #include <functional>
 
 namespace am0_interpreter {
-	typedef struct am0_state {
-		unsigned int pc;
-		std::vector<int> d_stack;
-		std::map<int,int> mem;
-	} am0_state_t;
-
 	class am0 {
 		public:
-			bool set_state(const am0_state_t&);
 			virtual bool run(bool = false);
 			virtual void reset(void);
-			static bool parse(am0&, std::istream& = std::cin, bool = false);
-			static bool parse(am0_state_t&, std::istream& = std::cin);
+			virtual bool parse_prog(std::istream& = std::cin, bool = false);
+			virtual bool parse_state(std::istream& = std::cin);
+			virtual ~am0() {}
 			friend std::ostream& operator<<(std::ostream&,const am0&);
 		private:
 			typedef boost::variant<
@@ -38,10 +32,8 @@ namespace am0_interpreter {
 					am0& am0_machine;
 			};
 
-			static bool load(am0&,int);
-			static bool store(am0&,int);
-			static bool read(am0&,int);
-			static bool write(am0&,int);
+			static bool load(am0&,int), store(am0&,int);
+			static bool read(am0&,int), write(am0&,int);
 		protected:
 			unsigned int pc = 1;
 			std::vector<int> d_stack;
@@ -51,20 +43,9 @@ namespace am0_interpreter {
 			bool jmp_address_is_valid(int,bool = false) const;
 
 			bool perform_bin_op(const std::function<void(int,int&)>&);
-			static bool add(am0&);
-			static bool sub(am0&);
-			static bool mul(am0&);
-			static bool div(am0&);
-			static bool mod(am0&);
-			static bool lt(am0&);
-			static bool eq(am0&);
-			static bool ne(am0&);
-			static bool gt(am0&);
-			static bool le(am0&);
-			static bool ge(am0&);
-			static bool lit(am0&,int);
-			static bool jmp(am0&,int);
-			static bool jmc(am0&,int);
+			static bool add(am0&), sub(am0&), mul(am0&), div(am0&), mod(am0&);
+			static bool lt(am0&), eq(am0&), ne(am0&), gt(am0&), le(am0&), ge(am0&);
+			static bool lit(am0&,int), jmp(am0&,int), jmc(am0&,int);
 	};
 
 }

@@ -1,22 +1,12 @@
 #include "am0_interpreter.hpp"
 
 namespace am1_interpreter {
-	typedef struct am1_state {
-		unsigned int pc;
-		std::vector<int> d_stack;
-		std::vector<int> rt_stack;
-	} am1_state_t;
-
 	class am1 : private am0_interpreter::am0 {
 		public:
-			bool set_state(const am0_interpreter::am0_state_t&) = delete;
-			bool set_state(const am1_state_t&);
-			bool run(bool = false);
-			void reset(void);
-			static bool parse(am0_interpreter::am0&, std::istream& = std::cin, bool = false) = delete;
-			static bool parse(am0_interpreter::am0_state_t&, std::istream& = std::cin) = delete;
-			static bool parse(am1&, std::istream& = std::cin, bool = false);
-			static bool parse(am1_state_t&, std::istream& = std::cin);
+			bool run(bool = false) final override;
+			void reset(void) final override;
+			bool parse_prog(std::istream& = std::cin, bool = false) final override;
+			bool parse_state(std::istream& = std::cin) final override;
 			friend std::ostream& operator<<(std::ostream&,const am0&);
 		private:
 			typedef boost::variant<
@@ -27,17 +17,26 @@ namespace am1_interpreter {
 
 			std::vector<am1_func> prog;
 			std::vector<int> rt_stack;
+			unsigned int ref;
+
+			enum state {local, global};
 
 			class am1_func_visitor : public boost::static_visitor<bool> {
 				public:
 					am1_func_visitor(am1& a) : am1_machine(a) {}
 					bool operator()(std::function<bool(am1&)>&);
 					bool operator()(std::pair<std::function<bool(am1&,int)>,int>&);
-					bool operator()(std::tuple<std::function<bool(am1&,int)>,bool,int>&);
+					bool operator()(std::tuple<std::function<bool(am1&,state,int)>,state,int>&);
 				private:
 					am1& am1_machine;
 			};
 
-			//TODO: new AM1_functions
+			static bool load(am1&,state,int), store(am1&,state,int);
+		   	static bool read(am1&,state,int), write(am1&,state,int);
+			static bool loadi(am1&,int), storei(am1&,int);
+			static bool readi(am1&,int), writei(am1&,int);
+			static bool loada(am1&,state,int);
+			static bool push(am1&);
+			static bool call(am1&,int), init(am1&,int), ret(am1&,int);
 	};
 }

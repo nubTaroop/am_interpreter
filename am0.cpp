@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 					cerr << "Could not open file '" << argv[i] << "'" << endl;
 					return 1;
 				}
-				if (!am0::parse(prog, fs, FILE_T)) return 1;
+				if (!prog.parse_prog(fs, FILE_T)) return 1;
 				file = true;
 			}
 			else {
@@ -54,11 +54,10 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	if (!file && !am0::parse(prog)) return 1;
+	if (!file && !prog.parse_prog()) return 1;
 	if (state) {
-		am0_state_t am0_state;
 		bool once = true;
-		while (!am0::parse(am0_state)) {
+		while (!prog.parse_state()) {
 			if (once) {
 				cout << "Examples for valid AM0 states:\n" <<
 					"{1,-,[]} (default)\n" <<
@@ -67,7 +66,6 @@ int main(int argc, char** argv) {
 				once = false;
 			}
 		}
-		if (!prog.set_state(am0_state)) return 1;
 	}
 	if (cout << "Running the AM0 interpreter:" << endl && !prog.run(logging)) {
 		cerr << "AM0 interpreter terminated with an error.\nLast machine state: " << prog << endl;
