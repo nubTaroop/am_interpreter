@@ -5,7 +5,7 @@ AM-language interpreter
 
 <h2>Installation:</h2>
   Requires <i>g++</i>, <i>make</i> and the <a href="http://boost.org"><i>c++ boost library</i></a><br>
-  <h4>@<i>Ubuntu</i>:</h4>
+  <b>@<i>Ubuntu</i>:</b>
   1. <code>sudo apt-get install g++ make libboost-all-dev</code>
   2. Clone the repository
   3. Run <code>make</code> in order to compile both interpreters or <br>
@@ -21,4 +21,4 @@ AM-language interpreter
   2. Make your code file excecutable with <code>chmod +x FILE</code>
   3. Excecute it with <code>./FILE</code>
 
- <h5>Report bugs to nubtaroop@googlemail.com</h5>
+ <h5>Feel free to report any bugs to nubtaroop@googlemail.com</h5>
