@@ -13,7 +13,6 @@ AM-language interpreter
     <li>Run <code>make</code> in order to compile both interpreters or <br>
     run <code>make install</code> in order to install both interpreters and enable excecutable support</li>
   </ul>
-  <br>
   <b>@<i>Other OS</i>:</b>
   <ul>
     <li>Install a c++ compiler of your choice</li>
