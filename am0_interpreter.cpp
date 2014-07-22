@@ -22,7 +22,7 @@ namespace am0_interpreter {
 
 	bool am0::jmp_address_is_valid(int jmp_address, bool check_loop) const {
 		if (jmp_address < 0 || (size_t) jmp_address > prog.size()) {
-			std::cerr << "Invalid jump address\n\n";
+			std::cerr << "Invalid jump address. Possible range [0-" + std::to_string(prog.size()) + "]\n\n";
 			return false;
 		}
 		if (check_loop && (unsigned int) jmp_address == pc) {
@@ -58,18 +58,21 @@ namespace am0_interpreter {
 	}
 
 	std::ostream& operator<<(std::ostream& os,const am0& o) {
-		std::string ret = "{" + std::to_string(o.pc) + ",";
+		std::string ret = "(" + std::to_string(o.pc);
+		for (size_t i=0; i < (std::to_string(o.prog.size()).length() - ret.length() + 1);++i) ret += ' ';
+		ret += " , ";
 		for (auto rit = o.d_stack.rbegin(); rit != o.d_stack.rend(); ++rit) ret += std::to_string(*rit) + ":";
 		if (o.d_stack.size()) ret.pop_back();
 		else ret += "-";
-		ret += ",[";
+		ret += " , [";
 		for (auto x : o.mem ) ret += std::to_string(x.first) + "/" + std::to_string(x.second) + ",";
 		if (o.mem.size()) ret.pop_back();
-		ret += "]}";
+		ret += "])";
 		return os << ret;
 	}
 
 	bool am0::perform_bin_op(const std::function<void(int,int&)>& f) {
+		if (!enough_arguments_on_stack(2)) return false;
 		f(d_stack[d_stack.size() - 1], d_stack[d_stack.size() - 2]);
 		d_stack.pop_back();
 		++pc;
@@ -77,59 +80,48 @@ namespace am0_interpreter {
 	}
 
 	bool am0::add(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		return a.perform_bin_op([] (int first, int& second) { second += first; });
 	}
 
 	bool am0::sub(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		return a.perform_bin_op([] (int first, int& second) { second -= first; });
 	}
 
 	bool am0::mul(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		return a.perform_bin_op([] (int first, int& second) { second *= first; });
 	}
 
 	bool am0::div(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		if (a.d_stack.back()) { return a.perform_bin_op([] (int first, int& second) { second /= first; }); }
-		else { std::cerr << "Null division" << std::endl; return false; }
+		else { std::cerr << "Null division\n\n"; return false; }
 	}
 
 	bool am0::mod(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		if (a.d_stack.back()) { return a.perform_bin_op([] (int first, int& second) { second %= first; }); }
-		else { std::cerr << "Null division" << std::endl; return false;}
+		else { std::cerr << "Null division\n\n"; return false;}
 	}
 
 	bool am0::lt(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		return a.perform_bin_op([] (int first, int& second) { second = second < first; });
 	}
 
 	bool am0::eq(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		return a.perform_bin_op([] (int first, int& second) { second = second == first; });
 	}
 
 	bool am0::ne(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		return a.perform_bin_op([] (int first, int& second) { second = second != first; });
 	}
 
 	bool am0::gt(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		return a.perform_bin_op([] (int first, int& second) { second = second > first; });
 	}
 
 	bool am0::le(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		return a.perform_bin_op([] (int first, int& second) { second = second <= first; });
 	}
 
 	bool am0::ge(am0& a) {
-		if (!a.enough_arguments_on_stack(2)) return false;
 		return a.perform_bin_op([] (int first, int& second) { second = second >= first; });
 	}
 
@@ -164,7 +156,7 @@ namespace am0_interpreter {
 		if (!a.jmp_address_is_valid(par) || !a.enough_arguments_on_stack(1)) return false;
 		if (a.d_stack.back() == 0) a.pc = par;
 		else if (a.d_stack.back() == 1) ++a.pc;
-		else { std::cerr << "Jump conditions have to be 1 or 0" << std::endl; return false; }
+		else { std::cerr << "Jump conditions have to be 1 or 0\n\n"; return false; }
 		a.d_stack.pop_back();
 		return true;
 	}
@@ -173,7 +165,7 @@ namespace am0_interpreter {
 		if (!a.address_is_valid(par)) return false;
 		int i;
 		std::cout << " In: "; std::cin >> i;
-		if (std::cin.fail()) { std::cin.clear(); std::cerr << "Wrong input" << std::endl; return false; }
+		if (std::cin.fail()) { std::cin.clear(); std::cerr << "Wrong input\n\n"; return false; }
 		a.mem[par] = i;
 		++a.pc;
 		return true;
@@ -203,11 +195,12 @@ namespace am0_interpreter {
 		std::string line;
 		while (std::cout << std::to_string(++lnr) << ": " && std::getline(is,line)) {
 #if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
-			if (line == "") {
+			if (line == "" || line.substr(0,1) == "#") {
 				--lnr;
 				if (file) std::cout << "\x1b[0G";
 				else std::cout << "\x1b[F";
-				std::cout << "\x1b[K\n";
+				std::cout << "\x1b[K";
+				if (line.substr(0,2) != "#!") std::cout << "\x1b[34;1m" << line << "\x1b[m\n";
 				continue;
 			}
 #endif
@@ -264,14 +257,12 @@ namespace am0_interpreter {
 			std::vector<int> d_stack;
 			std::map<int,int> mem;
 		} state;
-		state.d_stack.clear();
-		state.mem.clear();
 		std::cout << "AM0 state:" << std::endl;
 		std::string line;
 		std::getline(is,line);
 		if (is.fail()) return parse_error(is);
 		std::istringstream cs {line};
-		if ( !((cs.get() == '{') && (cs >> state.pc) && (cs.get() == ',')) ) return parse_error(cs,line);
+		if ( !((cs.get() == '(') && (cs >> state.pc) && (cs.get() == ',')) ) return parse_error(cs,line);
 		if (!jmp_address_is_valid(state.pc)) return false;
 		int value;
 		std::vector<int> r_stack;
@@ -294,7 +285,8 @@ namespace am0_interpreter {
 				else state.mem[key] = value;
 			}
 			while (cs.peek() != ']') {
-				if ( !((cs.get() == ',') && (cs >> key) && (cs.get() == '/') && (cs >> value)) ) return parse_error(cs,line);
+				if ( !((cs.get() == ',') && (cs >> key) && (cs.get() == '/') && (cs >> value)) )
+					return parse_error(cs,line);
 				else {
 					if (state.mem.count(key)) return parse_error(cs,line);
 					else state.mem[key] = value;
@@ -302,7 +294,7 @@ namespace am0_interpreter {
 			}
 		}
 		cs.ignore();
-		if (cs.get() != '}') return parse_error(cs,line);
+		if (cs.get() != ')') return parse_error(cs,line);
 		pc = state.pc;
 		d_stack = state.d_stack;
 		mem = state.mem;

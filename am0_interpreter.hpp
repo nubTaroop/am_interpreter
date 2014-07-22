@@ -20,9 +20,6 @@ namespace am0_interpreter {
 				std::pair<std::function<bool(am0&,int)>,int>
 			> am0_func;
 
-			std::vector<am0_func> prog;
-			std::map<int,int> mem;
-
 			class am0_func_visitor : public boost::static_visitor<bool> {
 				public:
 					am0_func_visitor(am0& a) : am0_machine(a) {}
@@ -32,15 +29,20 @@ namespace am0_interpreter {
 					am0& am0_machine;
 			};
 
+			std::vector<am0_func> prog;
+			std::map<int,int> mem;
+
+
+			bool address_is_valid(int,bool = false) const;
+
 			static bool load(am0&,int), store(am0&,int);
 			static bool read(am0&,int), write(am0&,int);
 		protected:
 			unsigned int pc = 1;
 			std::vector<int> d_stack;
 
+			virtual bool jmp_address_is_valid(int,bool = false) const;
 			bool enough_arguments_on_stack(int) const;
-			virtual bool address_is_valid(int,bool = false) const;
-			bool jmp_address_is_valid(int,bool = false) const;
 
 			bool perform_bin_op(const std::function<void(int,int&)>&);
 			static bool add(am0&), sub(am0&), mul(am0&), div(am0&), mod(am0&);

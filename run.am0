@@ -1,19 +1,27 @@
+#!/bin/am0 -l
+#prog: reads a number and writes out its factorial
+#input x @ [1]
 READ 1;
 LIT 1;
+#current multiplier @ [2]
 STORE 2;
 LOAD 1;
 LIT 2;
 LT;
+#ignore numbers less than 2
 JMC 10;
   WRITE 2;
   JMP 0;
 LIT 1;
+#result @ [3]
 STORE 3;
 LOAD 2;
 LOAD 1;
 LT;
+#do until current multiplier reaches input
 JMC 25;
   LOAD 3;
+#increment multiplier
   LOAD 2;
   LIT 1;
   ADD;

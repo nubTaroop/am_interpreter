@@ -1,0 +1,50 @@
+#!/bin/am1 -l
+#prog
+#global [1] a
+#global [2] b
+INIT 2;
+CALL 24;
+JMP 0;
+
+#double(x,*y)
+# var local [-3]: x
+# var-ref [-2]: y
+INIT 0;
+LOAD(local,-3);
+LIT 0;
+GT;
+JMC 21;
+# if x > 0
+	LOAD(local,-3);
+	LIT 1;
+	SUB;
+	PUSH;
+	LOAD(local,-2);
+	PUSH;
+	CALL 4;
+#	double(x-1,*y)
+	LOADI(-2);
+	LIT 2;
+	ADD;
+	STOREI(-2);
+#	*y += 2
+JMP 23;
+# else
+	LIT 0;
+	STOREI(-2);
+#	*y = 0
+RET 2;
+
+#main()
+INIT 0;
+READ(global,1);
+# in -> a
+LOAD(global,1);
+PUSH;
+LOADA(global,2);
+PUSH;
+CALL 4;
+# double(a,&b)
+WRITE(global,2);
+# out -> b
+RET 0;
