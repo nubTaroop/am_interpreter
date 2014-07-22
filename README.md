@@ -4,7 +4,7 @@ AM-language interpreter
 <h5>Interpreter of AM-languages (as introduced at <i>TU Dresden</i> , for eductional purposes only)</h5>
 
 <h2>Installation:</h2>
-  Requires <i>g++</i>, <i>make</i> and the <a href="http://boost.org"><i>c++ boost library</i></a><br>
+  Requires <i>g++</i>, <i>make</i> and the <a href="http://boost.org"><i>c++ boost library</i></a> to be installed<br><br>
   <b>@<i>Ubuntu</i>:</b>
   1. <code>sudo apt-get install g++ make libboost-all-dev</code>
   2. Clone the repository
