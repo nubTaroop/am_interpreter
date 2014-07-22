@@ -25,8 +25,10 @@ AM-language interpreter
   Try a test run with <code>./am0 -l run.am0</code> or <code>./am1 -l run.am1</code><br>
   
   If you used <code>make install</code>, you can make your AM-code files excecutable:
-  1. Add <code>#!/bin/am0</code> or <code>#!/bin/am1</code> as a <a href="http://en.wikipedia.org/wiki/Shebang_(Unix)">shebang</a> to the beginning of your file
-  2. Make your code file excecutable with <code>chmod +x FILE</code>
-  3. Excecute it with <code>./FILE</code>
+  <ul>
+    <li>Add <code>#!/bin/am0</code> or <code>#!/bin/am1</code> as a <a href="http://en.wikipedia.org/wiki/Shebang_(Unix)">shebang</a> to the beginning of your file</li>
+    <li>Make your code file excecutable with <code>chmod +x FILE</code></li>
+    <li>Excecute it with <code>./FILE</code></li>
+  </ul>
 
 <h5>Feel free to report any bugs to nubtaroop@googlemail.com</h5>
