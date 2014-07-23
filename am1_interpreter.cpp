@@ -2,10 +2,13 @@
 #include "am1_interpreter.hpp"
 
 namespace am1_interpreter {
+	//starts the machine
+	//if logging is true the machine state will be printed out after every command
 	bool am1::run(bool logging) {
 		am1_func_visitor afv {*this};
 		while (pc && (pc <= prog.size())) {
 			if (logging) std::cout << *this << std::endl;
+			//run the function at programm counter
 			if (boost::apply_visitor(afv,prog[pc - 1])) continue;
 			else return false;
 		}
@@ -13,6 +16,7 @@ namespace am1_interpreter {
 		return true;
 	}
 
+	//sets the machine state to default
 	void am1::reset(void) {
 		pc = 1;
 		d_stack.clear();
@@ -20,10 +24,12 @@ namespace am1_interpreter {
 		ref = 0;
 	}
 
-	inline bool parse_error(std::istream& is, const std::string& line = "", int offset = 0) {
+	//print out a error message
+	//if "line" is not empty, the postion of the last correct character read from "is" will be shown
+	inline bool parse_error(std::istream& is, const std::string& line = "") {
 		if (line != "") {
 			int pos = is.tellg();
-			for (int i = 0; i < pos + offset; ++i) std::cerr << " ";
+			for (int i = 0; i < pos; ++i) std::cerr << " ";
 			std::cerr << "^" << std::endl;
 		}
 		std::cerr << "Error while parsing\n\n";
@@ -31,17 +37,23 @@ namespace am1_interpreter {
 		return false;
 	}
 
+	//parse code into the machine
+	//file has to be true if "is" is a filestream in order to provide correct output
 	bool am1::parse_prog(std::istream& is, bool file) {
 		std::cout << "AM1 code:" << std::endl;
 		int lnr = 0;
 		std::string line;
 		while (std::cout << std::to_string(++lnr) << ": " && std::getline(is,line)) {
+			//Enable shebang, comment and new line support under UNIX like systems
 #if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
 			if (line == "" || line.substr(0,1) == "#") {
 				--lnr;
+				//move cursor back to start
 				if (file) std::cout << "\x1b[0G";
 				else std::cout << "\x1b[F";
+				//remove last line
 				std::cout << "\x1b[K";
+				//print comments in blue and bold
 				if (line.substr(0,2) != "#!") std::cout << "\x1b[34;1m" << line << "\x1b[m\n";
 				continue;
 			}
@@ -51,6 +63,7 @@ namespace am1_interpreter {
 			std::string keyword;
 			int par;
 			ls >> keyword;
+			//read functions from "ls" and add them to programm code container
 			if (keyword == "ADD;") { prog.push_back(am0::add); continue; }
 			else if (keyword == "SUB;") { prog.push_back(sub); continue; }
 			else if (keyword == "MUL;") { prog.push_back(mul); continue; }
@@ -128,9 +141,10 @@ namespace am1_interpreter {
 					else if (id == "local" && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(loada,local,par)); continue;}}
 				}
-				return parse_error(ls,id);
+				return parse_error(is);
 			};
 		}
+		//Last code line number will be removed after input ends under UNIX like systems
 #if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
 		std::cout << "\x1b[0G\x1b[0K";
 #endif
@@ -139,6 +153,7 @@ namespace am1_interpreter {
 		return true;
 	}
 
+	//check if "ra" is valid return address
 	bool am1::ra_address_is_valid(int ra) const {
 		if (ra <= 0 || (size_t) ra > prog.size()) {
 			std::cerr << "Invalid return address. Possible range [1-" + std::to_string(prog.size()) + "]\n\n";
@@ -147,6 +162,7 @@ namespace am1_interpreter {
 		return true;
 	}
 
+	//check if "adr" is valid memory address
 	bool am1::address_is_valid(state s, int adr) const {
 		if ((s == global && (adr <= 0 || (size_t) adr > rt_stack.size())) ||
 			(s == local && ((adr + (int) ref) <= 0 || (size_t) ((int) ref + adr) > rt_stack.size()))) {
@@ -156,6 +172,8 @@ namespace am1_interpreter {
 		return true;
 	}
 
+	//check if "jmp_address" is a valid jump address
+	//if "check_loop" is true the jump address can't be equal to the current programm counter
 	bool am1::jmp_address_is_valid(int jmp_address, bool check_loop) const {
 		if (jmp_address < 0 || (size_t) jmp_address > prog.size()) {
 			std::cerr << "Invalid jump address. Possible range [0-" + std::to_string(prog.size()) + "]\n\n";
@@ -168,7 +186,12 @@ namespace am1_interpreter {
 		return true;
 	}
 
+	//parse a initial state into the machine
+	//input syntax: (programm counter, data stack, runtime stack, ref)
+	//serveral data or runtime stack elements are seperated by a colon
+	//data stack is read in reverse order
 	bool am1::parse_state(std::istream& is) {
+		//temporary state container
 		struct am0_state {
 			unsigned int pc;
 			std::vector<int> d_stack;
@@ -204,6 +227,7 @@ namespace am1_interpreter {
 		}
 		cs.ignore(2,',');
 		if ((cs >> state.ref) && cs.get() != ')') return parse_error(cs,line);
+		//apply changes from temporary state container (the machine is always left in a working/default state)
 		pc = state.pc;
 		d_stack = state.d_stack;
 		rt_stack = state.rt_stack;
@@ -212,10 +236,13 @@ namespace am1_interpreter {
 		return true;
 	}
 
+	//prints out the state of the machine
 	std::ostream& operator<<(std::ostream& os, const am1& o) {
 		std::string ret = "(" + std::to_string(o.pc);
+		//offset for the programm counter (maximum character space needed is known at this point)
 		for (size_t i=0; i < (std::to_string(o.prog.size()).length() - ret.length() + 1);++i) ret += ' ';
 		ret += " , ";
+		//print data stack in reverse order
 		for (auto rit = o.d_stack.rbegin(); rit != o.d_stack.rend(); ++rit) ret += std::to_string(*rit) + ":";
 		if (o.d_stack.size()) ret.pop_back();
 		else ret += "-";
@@ -227,6 +254,7 @@ namespace am1_interpreter {
 		return os << ret;
 	}
 
+	//applicators to functions in the programm code container{
 	bool am1::am1_func_visitor::operator()(std::function<bool(am0&)>& f) {
 		return f(this->am1_machine);
 	}
@@ -246,7 +274,10 @@ namespace am1_interpreter {
 	bool am1::am1_func_visitor::operator()(std::tuple<std::function<bool(am1&,state,int)>,state,int>& fc) {
 		return (std::get<0>(fc))(this->am1_machine,std::get<1>(fc),std::get<2>(fc));
 	}
+	//}
 
+	//operation: LOAD(b,o)
+	//TODO last commenting point @23.07.2014
 	bool am1::load(am1& a, state s, int adr) {
 		if (!a.address_is_valid(s,adr)) return false;
 		a.d_stack.push_back(a.rt_stack[adr - 1 + ((s == local) ? a.ref : 0)]);
@@ -254,6 +285,7 @@ namespace am1_interpreter {
 		return true;
 	}
 
+	//operation: STORE(b,o)
 	bool am1::store(am1& a, state s, int adr) {
 		if (!a.enough_arguments_on_stack(1) || !a.address_is_valid(s,adr)) return false;
 		a.rt_stack[adr - 1 + ((s == local) ? a.ref : 0)] = a.d_stack.back();
