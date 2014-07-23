@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 		bool once = true;
 		while (!prog.parse_state()) {
 			if (once) {
-				//if the user cant provide a correct machine state, a note how about the syntax will be shown once
+				//if the user cant provide a correct machine state, a note about the syntax will be shown once
 				cout << "Examples for valid AM0 states:\n" <<
 					"(1,-,[]) - default\n" <<
 					"(14,2:3,[1/3,2/-1,3/2])\n" <<
