@@ -188,7 +188,7 @@ namespace am1_interpreter {
 
 	//parse a initial state into the machine
 	//input syntax: (program counter, data stack, runtime stack, ref)
-	//serveral data or runtime stack elements are seperated by a colon
+	//multiple data or runtime stack elements are seperated by a colon
 	//data stack is read in reverse order
 	bool am1::parse_state(std::istream& is) {
 		//temporary state container
@@ -365,7 +365,7 @@ namespace am1_interpreter {
 		return true;
 	}
 
-	//operation: CALL(adr)
+	//operation: CALL adr
 	bool am1::call(am1& a, int adr) {
 		if (!a.ra_address_is_valid(adr)) return false;
 		//store return address at the end of the runtime stack
@@ -379,7 +379,7 @@ namespace am1_interpreter {
 		return true;
 	}
 
-	//operation: INIT(n)
+	//operation: INIT n
 	bool am1::init(am1& a, int par) {
 		if (par < 0) {
 			std::cerr << "Init only takes arguments >= 0\n\n";
@@ -393,7 +393,7 @@ namespace am1_interpreter {
 		return true;
 	}
 
-	//operation: RET(n)
+	//operation: RET n
 	bool am1::ret(am1& a, int par) {
 		if (par < 0 || a.rt_stack.size() < (size_t) (par + 2)) {
 			std::cerr << "Not enough values on runtime stack\n\n";

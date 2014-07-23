@@ -11,9 +11,12 @@ int main(int argc, char** argv) {
 	bool logging = false;
 	bool file = false;
 	bool state = false;
+	//map parameters to options
 	map<string,function<void()>> options = {
+		//enable the state logging of the machine
 		{"-l", ([&] () {logging= true;})},
 		{"--logging", ([&] () {logging= true;})},
+		//enable parsing of a inital state
 		{"-i", ([&] () {state= true;})},
 		{"--init", ([&] () {state= true;})}
 	};
@@ -30,6 +33,7 @@ int main(int argc, char** argv) {
 	enum {FILE_T = true};
 	for (int i = 1; i < argc; ++i) {
 		if (argv[i][0] == '-') {
+			//apply options
 			if (options.count(argv[i])) options[argv[i]]();
 			else {
 				cerr << __PROG_NAME__ << ": Invalid option '" << argv[i] << "'" << endl <<
@@ -44,21 +48,25 @@ int main(int argc, char** argv) {
 					cerr << "Could not open file '" << argv[i] << "'" << endl;
 					return 1;
 				}
+				//parse from file
 				if (!prog.parse_prog(fs, FILE_T)) return 1;
 				file = true;
 			}
 			else {
+				//parse from stdin
 				cerr << __PROG_NAME__ << ": Invalid argument '" << argv[i] << "'" << endl <<
 					"\"am0 --help\" gives further information." << endl;
 				return 1;
 			}
 		}
 	}
+	//parse inital state if enabled
 	if (!file && !prog.parse_prog()) return 1;
 	if (state) {
 		bool once = true;
 		while (!prog.parse_state()) {
 			if (once) {
+				//if the user cant provide a correct machine state, a note how about the syntax will be shown once
 				cout << "Examples for valid AM0 states:\n" <<
 					"(1,-,[]) - default\n" <<
 					"(14,2:3,[1/3,2/-1,3/2])\n" <<
@@ -67,6 +75,7 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
+	//run the machine and show the final state at the end
 	if (cout << "Running the AM0 interpreter:" << endl && !prog.run(logging)) {
 		cerr << "AM0 interpreter terminated with an error.\nLast machine state: " << prog << endl;
 	}
