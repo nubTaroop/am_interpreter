@@ -29,7 +29,7 @@ namespace am0_interpreter {
 					am0& am0_machine;
 			};
 
-			std::vector<am0_func> prog; //programm code container
+			std::vector<am0_func> prog; //program code container
 			std::map<int,int> mem; //memory: relation between memory addresses and memory values
 
 
@@ -38,7 +38,7 @@ namespace am0_interpreter {
 			static bool load(am0&,int), store(am0&,int);
 			static bool read(am0&,int), write(am0&,int);
 		protected:
-			unsigned int pc = 1; //programm counter
+			unsigned int pc = 1; //program counter
 			std::vector<int> d_stack; //data stack
 
 			virtual bool jmp_address_is_valid(int,bool = false) const; //check if a jump address is valid

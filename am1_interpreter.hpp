@@ -18,7 +18,7 @@ namespace am1_interpreter {
 				std::tuple<std::function<bool(am1&,state,int)>, state, int>
 			> am1_func;
 
-			std::vector<am1_func> prog; //programm code container
+			std::vector<am1_func> prog; //program code container
 			std::vector<int> rt_stack; //runtime stack
 			unsigned int ref = 0; //point of the last "previous activation record"
 

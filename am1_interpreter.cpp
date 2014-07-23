@@ -63,7 +63,7 @@ namespace am1_interpreter {
 			std::string keyword;
 			int par;
 			ls >> keyword;
-			//read functions from "ls" and add them to programm code container
+			//read functions from "ls" and add them to program code container
 			if (keyword == "ADD;") { prog.push_back(am0::add); continue; }
 			else if (keyword == "SUB;") { prog.push_back(sub); continue; }
 			else if (keyword == "MUL;") { prog.push_back(mul); continue; }
@@ -173,7 +173,7 @@ namespace am1_interpreter {
 	}
 
 	//check if "jmp_address" is a valid jump address
-	//if "check_loop" is true the jump address can't be equal to the current programm counter
+	//if "check_loop" is true the jump address can't be equal to the current program counter
 	bool am1::jmp_address_is_valid(int jmp_address, bool check_loop) const {
 		if (jmp_address < 0 || (size_t) jmp_address > prog.size()) {
 			std::cerr << "Invalid jump address. Possible range [0-" + std::to_string(prog.size()) + "]\n\n";
@@ -187,7 +187,7 @@ namespace am1_interpreter {
 	}
 
 	//parse a initial state into the machine
-	//input syntax: (programm counter, data stack, runtime stack, ref)
+	//input syntax: (program counter, data stack, runtime stack, ref)
 	//serveral data or runtime stack elements are seperated by a colon
 	//data stack is read in reverse order
 	bool am1::parse_state(std::istream& is) {
@@ -239,7 +239,7 @@ namespace am1_interpreter {
 	//prints out the state of the machine
 	std::ostream& operator<<(std::ostream& os, const am1& o) {
 		std::string ret = "(" + std::to_string(o.pc);
-		//offset for the programm counter (maximum character space needed is known at this point)
+		//offset for the program counter (maximum character space needed is known at this point)
 		for (size_t i=0; i < (std::to_string(o.prog.size()).length() - ret.length() + 1);++i) ret += ' ';
 		ret += " , ";
 		//print data stack in reverse order
@@ -254,7 +254,7 @@ namespace am1_interpreter {
 		return os << ret;
 	}
 
-	//applicators to functions in the programm code container{
+	//applicators to functions in the program code container{
 	bool am1::am1_func_visitor::operator()(std::function<bool(am0&)>& f) {
 		return f(this->am1_machine);
 	}
@@ -277,9 +277,9 @@ namespace am1_interpreter {
 	//}
 
 	//operation: LOAD(b,o)
-	//TODO last commenting point @23.07.2014
 	bool am1::load(am1& a, state s, int adr) {
 		if (!a.address_is_valid(s,adr)) return false;
+		//load value at memory address from runtime stack to data stack
 		a.d_stack.push_back(a.rt_stack[adr - 1 + ((s == local) ? a.ref : 0)]);
 		a.pc++;
 		return true;
@@ -288,15 +288,19 @@ namespace am1_interpreter {
 	//operation: STORE(b,o)
 	bool am1::store(am1& a, state s, int adr) {
 		if (!a.enough_arguments_on_stack(1) || !a.address_is_valid(s,adr)) return false;
+		//store value from data stack at memory address on runtime stack
 		a.rt_stack[adr - 1 + ((s == local) ? a.ref : 0)] = a.d_stack.back();
+		//remove value from data stack
 		a.d_stack.pop_back();
 		a.pc++;
 		return true;
 	}
 
+	//operation: READ(b,o)
 	bool am1::read(am1& a, state s, int adr) {
 		if (!a.address_is_valid(s,adr)) return false;
 		int i;
+		//get value from stdin and store this value at memory address on runtime stack
 		std::cout << " In: "; std::cin >> i;
 		if (std::cin.fail()) { std::cin.clear(); std::cerr << "Wrong input\n\n"; return false; }
 		a.rt_stack[adr - 1 + ((s == local) ? a.ref : 0)] = i;
@@ -304,79 +308,115 @@ namespace am1_interpreter {
 		return true;
 	}
 
+	//operation: WRITE(b,o)
 	bool am1::write(am1& a, state s, int adr) {
 		if (!a.address_is_valid(s,adr)) return false;
+		//write value at memory address from runtime stack to stdout
 		std::cout << "Out: " << a.rt_stack[adr - 1 + ((s == local) ? a.ref : 0)] << std::endl;
 		a.pc++;
 		return true;
 	}
 
+	//operation: LOADI(o)
 	bool am1::loadi(am1& a, int adr) {
 		if (!a.address_is_valid(local,adr)) return false;
+		//dereference address and call LOAD(global,*o)
 		return am1::load(a,global,a.rt_stack[adr - 1 + a.ref]);
 	}
 
+	//operation: STOREI(o)
 	bool am1::storei(am1& a, int adr) {
 		if (!a.address_is_valid(local,adr)) return false;
+		//dereference address and call STORE(global,*o)
 		return am1::store(a,global,a.rt_stack[adr - 1 + a.ref]);
 	}
 
+	//operation: READI(o)
 	bool am1::readi(am1& a, int adr) {
 		if (!a.address_is_valid(local,adr)) return false;
+		//dereference address and call READ(global,*o)
 		return am1::read(a,global,a.rt_stack[adr - 1 + a.ref]);
 	}
 
+	//operation: WRITEI(o)
 	bool am1::writei(am1& a, int adr) {
 		if (!a.address_is_valid(local,adr)) return false;
+		//dereference address and call WRITE(global,*o)
 		return am1::write(a,global,a.rt_stack[adr - 1 + a.ref]);
 	}
 
+	//operation: LOADA(b,o)
 	bool am1::loada(am1& a, state s, int adr) {
 		if (!a.address_is_valid(s,adr)) return false;
+		//load relative address to data stack
 		a.d_stack.push_back(adr + ((s == local) ? a.ref : 0));
 		a.pc++;
 		return true;
 	}
 
+	//operation: PUSH
 	bool am1::push(am1& a) {
 		if (!a.enough_arguments_on_stack(1)) return false;
+		//store value from data stack at the end of the runtime stack
 		a.rt_stack.push_back(a.d_stack.back());
+		//remove value from data stack
 		a.d_stack.pop_back();
 		a.pc++;
 		return true;
 	}
 
+	//operation: CALL(adr)
 	bool am1::call(am1& a, int adr) {
 		if (!a.ra_address_is_valid(adr)) return false;
+		//store return address at the end of the runtime stack
 		a.rt_stack.push_back(a.pc + 1);
+		//store previous activation record at the end of the runtime stack
 		a.rt_stack.push_back(a.ref);
+		//update program counter
 		a.pc = adr;
+		//update ref to new point of the last previous activation record
 		a.ref = a.rt_stack.size();
 		return true;
 	}
 
+	//operation: INIT(n)
 	bool am1::init(am1& a, int par) {
 		if (par < 0) {
 			std::cerr << "Init only takes arguments >= 0\n\n";
 			return false;
 		}
+		//equal to n-times:
+		//LIT 0;
+		//PUSH;
 		for (int i = 0; i < par; ++i) a.rt_stack.push_back(0);
 		a.pc++;
 		return true;
 	}
 
+	//operation: RET(n)
 	bool am1::ret(am1& a, int par) {
 		if (par < 0 || a.rt_stack.size() < (size_t) (par + 2)) {
-			std::cerr << "Not enough arguments on runtime stack\n\n";
+			std::cerr << "Not enough values on runtime stack\n\n";
 			return false;
 		}
-		if (!a.ra_address_is_valid(a.rt_stack[a.rt_stack.size() - 2]) ||
-			a.rt_stack.back() > ((int) a.ref - 2) || a.rt_stack.back() < 0) {
+		if (a.ref < a.rt_stack.size()) {
+			std::cerr << "Invalid ref. Not enough values on runtime stack\n\n";
+			return false;
+		}
+		if (!a.ra_address_is_valid(a.rt_stack[a.ref - 2]) ||
+			a.rt_stack[a.ref - 1] > ((int) a.ref - 2) || a.rt_stack[a.ref - 1] < 0) {
 			std::cerr << "Can't return. Invalid arguments on runtime stack\n\n";
 			return false;
 		}
-		a.pc = a.rt_stack[a.rt_stack.size() - 2];
-		a.ref = a.rt_stack.back();
+		//return old program counter
+		a.pc = a.rt_stack[a.ref - 2];
+		//save a temporary backup of the old ref
+		unsigned int oldref = a.ref;
+		//return previous activation record to ref
+		a.ref = a.rt_stack[a.ref - 1];
+		//remove localy initialised values from runtime stack
+		while (a.rt_stack.size() > oldref) a.rt_stack.pop_back();
+		//remove n local parameters, the return address and the previous activation record from runtime stack
 		for (int i = 0; i < (par + 2); ++i) a.rt_stack.pop_back();
 		return true;
 	}
