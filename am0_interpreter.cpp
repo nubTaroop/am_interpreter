@@ -77,26 +77,19 @@ namespace am0_interpreter {
 			else if (keyword == "LE;") { prog.push_back(le); continue; }
 			else if (keyword == "GE;") { prog.push_back(ge); continue; }
 			else if (keyword == "LOAD") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(load,par)); continue; }
-			}
+				prog.push_back(std::make_pair(load,par)); continue; }}
 			else if (keyword == "LIT") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(lit,par)); continue; }
-			}
+				prog.push_back(std::make_pair(lit,par)); continue; }}
 			else if (keyword == "STORE") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(store,par)); continue; }
-			}
+				prog.push_back(std::make_pair(store,par)); continue; }}
 			else if (keyword == "JMP") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(jmp,par)); continue; }
-			}
+				prog.push_back(std::make_pair(jmp,par)); continue; }}
 			else if (keyword == "JMC") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(jmc,par)); continue; }
-			}
+				prog.push_back(std::make_pair(jmc,par)); continue; }}
 			else if (keyword == "READ") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(read,par)); continue; }
-			}
+				prog.push_back(std::make_pair(read,par)); continue; }}
 			else if (keyword == "WRITE") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(write,par)); continue; }
-			}
+				prog.push_back(std::make_pair(write,par)); continue; }}
 			return parse_error(is);
 		}
 		//Last code line number will be removed after input ends under UNIX like systems

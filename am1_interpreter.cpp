@@ -77,72 +77,54 @@ namespace am1_interpreter {
 			else if (keyword == "GE;") { prog.push_back(ge); continue; }
 			else if (keyword == "PUSH;") { prog.push_back(push); continue; }
 			else if (keyword == "LIT") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(lit,par)); continue; }
-			}
+				prog.push_back(std::make_pair(lit,par)); continue; }}
 			else if (keyword == "JMP") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(jmp,par)); continue; }
-			}
+				prog.push_back(std::make_pair(jmp,par)); continue; }}
 			else if (keyword == "JMC") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(jmc,par)); continue; }
-			}
+				prog.push_back(std::make_pair(jmc,par)); continue; }}
 			else if (keyword == "CALL") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(call,par)); continue; }
-			}
+				prog.push_back(std::make_pair(call,par)); continue; }}
 			else if (keyword == "INIT") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(init,par)); continue; }
-			}
+				prog.push_back(std::make_pair(init,par)); continue; }}
 			else if (keyword == "RET") { if (ls.get() == ' ' && ls >> par && ls.get() == ';') {
-				prog.push_back(std::make_pair(ret,par)); continue; }
-			}
+				prog.push_back(std::make_pair(ret,par)); continue; }}
 			else {
 				ls.seekg(0);
 				ls >> std::ws;
-				std::string id;
-				if ( !std::getline(ls,id,'(') ) return parse_error(is);
-				if (id == "LOADI") { if (ls >> par && ls.get() == ')') {
-					prog.push_back(std::make_pair(loadi,par)); continue;}
+				if ( !std::getline(ls,keyword,'(') ) return parse_error(is);
+				if (keyword == "LOADI") { if (ls >> par && ls.get() == ')') {
+					prog.push_back(std::make_pair(loadi,par)); continue;}}
+				else if (keyword == "STOREI") { if (ls >> par && ls.get() == ')') {
+					prog.push_back(std::make_pair(storei,par)); continue;}}
+				else if (keyword == "READI") { if (ls >> par && ls.get() == ')') {
+					prog.push_back(std::make_pair(readi,par)); continue;}}
+				else if (keyword == "WRITEI") { if (ls >> par && ls.get() == ')') {
+					prog.push_back(std::make_pair(writei,par)); continue;}}
+				else {
+					std::string visible;
+					if ( !std::getline(ls,visible,',') ) return parse_error(is);
+					visibility v;
+					if (visible == "global") v = global;
+					else if (visible == "local" || visible == "lokal") v = local;
+					else return parse_error(is);
+					if (keyword == "LOAD") {
+						if (ls >> par && ls.get() == ')' && ls.get() == ';') {
+							prog.push_back(std::make_tuple(load,v,par)); continue;}}
+					else if (keyword == "STORE") {
+						if (ls >> par && ls.get() == ')' && ls.get() == ';') {
+							prog.push_back(std::make_tuple(store,v,par)); continue;}}
+					else if (keyword == "READ") {
+						if (ls >> par && ls.get() == ')' && ls.get() == ';') {
+							prog.push_back(std::make_tuple(read,v,par)); continue;}}
+					else if (keyword == "WRITE") {
+						if (ls >> par && ls.get() == ')' && ls.get() == ';') {
+							prog.push_back(std::make_tuple(write,v,par)); continue;}}
+					else if (keyword == "LOADA") {
+						if (ls >> par && ls.get() == ')' && ls.get() == ';') {
+							prog.push_back(std::make_tuple(loada,v,par)); continue;}}
 				}
-				else if (id == "STOREI") { if (ls >> par && ls.get() == ')') {
-					prog.push_back(std::make_pair(storei,par)); continue;}
-				}
-				else if (id == "READI") { if (ls >> par && ls.get() == ')') {
-					prog.push_back(std::make_pair(readi,par)); continue;}
-				}
-				else if (id == "WRITEI") { if (ls >> par && ls.get() == ')') {
-					prog.push_back(std::make_pair(writei,par)); continue;}
-				}
-				else if (id == "LOAD") { if ( std::getline(ls,id,',') ) {
-					if (id == "global" && ls >> par && ls.get() == ')' && ls.get() == ';') {
-						prog.push_back(std::make_tuple(load,global,par)); continue;}
-					else if ((id == "local" || id == "lokal") && ls >> par && ls.get() == ')' && ls.get() == ';') {
-						prog.push_back(std::make_tuple(load,local,par)); continue;}}
-				}
-				else if (id == "STORE") { if ( std::getline(ls,id,',') ) {
-					if (id == "global" && ls >> par && ls.get() == ')' && ls.get() == ';') {
-						prog.push_back(std::make_tuple(store,global,par)); continue;}
-					else if ((id == "local" || id == "lokal") && ls >> par && ls.get() == ')' && ls.get() == ';') {
-						prog.push_back(std::make_tuple(store,local,par)); continue;}}
-				}
-				else if (id == "READ") { if ( std::getline(ls,id,',') ) {
-					if (id == "global" && ls >> par && ls.get() == ')' && ls.get() == ';') {
-						prog.push_back(std::make_tuple(read,global,par)); continue;}
-					else if ((id == "local" || id == "lokal") && ls >> par && ls.get() == ')' && ls.get() == ';') {
-						prog.push_back(std::make_tuple(read,local,par)); continue;}}
-				}
-				else if (id == "WRITE") { if ( std::getline(ls,id,',') ) {
-					if (id == "global" && ls >> par && ls.get() == ')' && ls.get() == ';') {
-						prog.push_back(std::make_tuple(write,global,par)); continue;}
-					else if ((id == "local" || id == "lokal") && ls >> par && ls.get() == ')' && ls.get() == ';') {
-						prog.push_back(std::make_tuple(write,local,par)); continue;}}
-				}
-				else if (id == "LOADA") { if ( std::getline(ls,id,',') ) {
-					if (id == "global" && ls >> par && ls.get() == ')' && ls.get() == ';') {
-						prog.push_back(std::make_tuple(loada,global,par)); continue;}
-					else if ((id == "local" || id == "lokal") && ls >> par && ls.get() == ')' && ls.get() == ';') {
-						prog.push_back(std::make_tuple(loada,local,par)); continue;}}
-				}
-				return parse_error(is);
-			};
+			}
+			return parse_error(is);
 		}
 		//Last code line number will be removed after input ends under UNIX like systems
 #if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
@@ -163,7 +145,7 @@ namespace am1_interpreter {
 	}
 
 	//check if "adr" is valid memory address
-	bool am1::address_is_valid(state s, int adr) const {
+	bool am1::address_is_valid(visibility s, int adr) const {
 		if ((s == global && (adr <= 0 || (size_t) adr > rt_stack.size())) ||
 			(s == local && ((adr + (int) ref) <= 0 || (size_t) ((int) ref + adr) > rt_stack.size()))) {
 				std::cerr << "Invalid memory address\n\n";
@@ -271,13 +253,13 @@ namespace am1_interpreter {
 		return fc.first(this->am1_machine,fc.second);
 	}
 
-	bool am1::am1_func_visitor::operator()(std::tuple<std::function<bool(am1&,state,int)>,state,int>& fc) {
+	bool am1::am1_func_visitor::operator()(std::tuple<std::function<bool(am1&,visibility,int)>,visibility,int>& fc) {
 		return (std::get<0>(fc))(this->am1_machine,std::get<1>(fc),std::get<2>(fc));
 	}
 	//}
 
 	//operation: LOAD(b,o)
-	bool am1::load(am1& a, state s, int adr) {
+	bool am1::load(am1& a, visibility s, int adr) {
 		if (!a.address_is_valid(s,adr)) return false;
 		//load value at memory address from runtime stack to data stack
 		a.d_stack.push_back(a.rt_stack[adr - 1 + ((s == local) ? a.ref : 0)]);
@@ -286,7 +268,7 @@ namespace am1_interpreter {
 	}
 
 	//operation: STORE(b,o)
-	bool am1::store(am1& a, state s, int adr) {
+	bool am1::store(am1& a, visibility s, int adr) {
 		if (!a.enough_arguments_on_stack(1) || !a.address_is_valid(s,adr)) return false;
 		//store value from data stack at memory address on runtime stack
 		a.rt_stack[adr - 1 + ((s == local) ? a.ref : 0)] = a.d_stack.back();
@@ -297,7 +279,7 @@ namespace am1_interpreter {
 	}
 
 	//operation: READ(b,o)
-	bool am1::read(am1& a, state s, int adr) {
+	bool am1::read(am1& a, visibility s, int adr) {
 		if (!a.address_is_valid(s,adr)) return false;
 		int i;
 		//get value from stdin and store this value at memory address on runtime stack
@@ -309,7 +291,7 @@ namespace am1_interpreter {
 	}
 
 	//operation: WRITE(b,o)
-	bool am1::write(am1& a, state s, int adr) {
+	bool am1::write(am1& a, visibility s, int adr) {
 		if (!a.address_is_valid(s,adr)) return false;
 		//write value at memory address from runtime stack to stdout
 		std::cout << "Out: " << a.rt_stack[adr - 1 + ((s == local) ? a.ref : 0)] << std::endl;
@@ -346,7 +328,7 @@ namespace am1_interpreter {
 	}
 
 	//operation: LOADA(b,o)
-	bool am1::loada(am1& a, state s, int adr) {
+	bool am1::loada(am1& a, visibility s, int adr) {
 		if (!a.address_is_valid(s,adr)) return false;
 		//load relative address to data stack
 		a.d_stack.push_back(adr + ((s == local) ? a.ref : 0));

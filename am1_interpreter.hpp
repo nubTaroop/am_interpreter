@@ -9,13 +9,13 @@ namespace am1_interpreter {
 			bool parse_state(std::istream& = std::cin) final override; //parse a initial state into the machine
 			friend std::ostream& operator<<(std::ostream&,const am1&); //print out the state of the machine
 		private:
-			enum state {local, global}; //information if address should be interpreted relative to ref
+			enum visibility {local, global}; //information if address should be interpreted relative to ref
 			typedef boost::variant<
 				std::function<bool(am0&)>,
 				std::pair<std::function<bool(am0&,int)>,int>,
 				std::function<bool(am1&)>,
 				std::pair<std::function<bool(am1&,int)>,int>,
-				std::tuple<std::function<bool(am1&,state,int)>, state, int>
+				std::tuple<std::function<bool(am1&,visibility,int)>, visibility, int>
 			> am1_func;
 
 			std::vector<am1_func> prog; //program code container
@@ -30,20 +30,20 @@ namespace am1_interpreter {
 					bool operator()(std::pair<std::function<bool(am0&,int)>,int>&);
 					bool operator()(std::function<bool(am1&)>&);
 					bool operator()(std::pair<std::function<bool(am1&,int)>,int>&);
-					bool operator()(std::tuple<std::function<bool(am1&,state,int)>,state,int>&);
+					bool operator()(std::tuple<std::function<bool(am1&,visibility,int)>,visibility,int>&);
 				private:
 					am1& am1_machine;
 			};
 
-			bool address_is_valid(state, int) const; //check if a memory address is valid
+			bool address_is_valid(visibility, int) const; //check if a memory address is valid
 			bool ra_address_is_valid(int) const; //check if a return address is valid
 			bool jmp_address_is_valid(int,bool = false) const final override; //check if a jump address is valid
 
-			static bool load(am1&,state,int), store(am1&,state,int);
-		   	static bool read(am1&,state,int), write(am1&,state,int);
+			static bool load(am1&,visibility,int), store(am1&,visibility,int);
+		   	static bool read(am1&,visibility,int), write(am1&,visibility,int);
 			static bool loadi(am1&,int), storei(am1&,int);
 			static bool readi(am1&,int), writei(am1&,int);
-			static bool loada(am1&,state,int);
+			static bool loada(am1&,visibility,int);
 			static bool push(am1&);
 			static bool call(am1&,int), init(am1&,int), ret(am1&,int);
 	};
