@@ -114,31 +114,31 @@ namespace am1_interpreter {
 				else if (id == "LOAD") { if ( std::getline(ls,id,',') ) {
 					if (id == "global" && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(load,global,par)); continue;}
-					else if (id == "local" && ls >> par && ls.get() == ')' && ls.get() == ';') {
+					else if ((id == "local" || id == "lokal") && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(load,local,par)); continue;}}
 				}
 				else if (id == "STORE") { if ( std::getline(ls,id,',') ) {
 					if (id == "global" && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(store,global,par)); continue;}
-					else if (id == "local" && ls >> par && ls.get() == ')' && ls.get() == ';') {
+					else if ((id == "local" || id == "lokal") && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(store,local,par)); continue;}}
 				}
 				else if (id == "READ") { if ( std::getline(ls,id,',') ) {
 					if (id == "global" && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(read,global,par)); continue;}
-					else if (id == "local" && ls >> par && ls.get() == ')' && ls.get() == ';') {
+					else if ((id == "local" || id == "lokal") && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(read,local,par)); continue;}}
 				}
 				else if (id == "WRITE") { if ( std::getline(ls,id,',') ) {
 					if (id == "global" && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(write,global,par)); continue;}
-					else if (id == "local" && ls >> par && ls.get() == ')' && ls.get() == ';') {
+					else if ((id == "local" || id == "lokal") && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(write,local,par)); continue;}}
 				}
 				else if (id == "LOADA") { if ( std::getline(ls,id,',') ) {
 					if (id == "global" && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(loada,global,par)); continue;}
-					else if (id == "local" && ls >> par && ls.get() == ')' && ls.get() == ';') {
+					else if ((id == "local" || id == "lokal") && ls >> par && ls.get() == ')' && ls.get() == ';') {
 						prog.push_back(std::make_tuple(loada,local,par)); continue;}}
 				}
 				return parse_error(is);
