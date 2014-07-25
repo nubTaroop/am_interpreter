@@ -381,7 +381,7 @@ namespace am1_interpreter {
 			std::cerr << "Not enough values on runtime stack\n\n";
 			return false;
 		}
-		if (a.ref < a.rt_stack.size()) {
+		if (a.ref > a.rt_stack.size()) {
 			std::cerr << "Invalid ref. Not enough values on runtime stack\n\n";
 			return false;
 		}
