@@ -1,7 +1,7 @@
 AM-language interpreter
 ==============
 
-<h5>Interpreter of AM-languages (as introduced at <i>TU Dresden</i> , for eductional purposes only)</h5>
+<h5>Interpreter of AM-languages (as introduced at <i>TU Dresden</i> , for educational purpose only)</h5>
 
 <h3>Installation:</h3>
   Requires <i>g++</i>, <i>make</i> and the <a href="http://boost.org"><i>c++ boost library</i></a> to be installed<br>
